@@ -46,7 +46,7 @@ def get_basic_info_by_id(aid=None, bid=None, full=True):
     except:
         raise Exception("获取视频基本信息错误")
 
-def get_replies_info_by_aid(aid, data_size=100):
+def get_replies_info_by_aid(aid, data_size=50):
     '''
     :param aid av号
     :param data_size 获取多少条评论
