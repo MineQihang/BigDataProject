@@ -44,3 +44,12 @@ def query_exceed_rate(indexes):
     col = mydb["bilibili"]
     sum_num = col.count_documents({})
     return dict((index, 1 - col.count_documents({index: {"$gt": value}}) / sum_num) for (index, value) in indexes.items())
+
+def query_words_count(num):
+    '''
+    查询数据库标题词频
+    :param num 需要多少
+    :return {词: 词频, ...}
+    '''
+    col = mydb["result"]
+    return dict((x["_1"], x["_2"]) for x in col.find({}).limit(num).sort("_2", -1))
