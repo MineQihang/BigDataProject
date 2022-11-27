@@ -33,3 +33,14 @@ def query_overall_situation():
     '''
     col = mydb["overall"]
     return list(col.find({}))
+
+
+def query_exceed_rate(indexes):
+    '''
+    计算超过数据库中多少视频
+    :param indexes 需要从哪些方面和对应的值，例如{"view": 120}
+    :return dict 结果{col: data}，例如{'view': 0.91}
+    '''
+    col = mydb["bilibili"]
+    sum_num = col.count_documents({})
+    return dict((index, 1 - col.count_documents({index: {"$gt": value}}) / sum_num) for (index, value) in indexes.items())
