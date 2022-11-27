@@ -149,3 +149,4 @@ yarn-error.log*
 */dataset/
 data/
 */config/
+*/test.py
