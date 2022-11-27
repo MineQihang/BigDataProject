@@ -147,3 +147,4 @@ yarn-error.log*
 # customize
 */temp/
 */dataset/
+data/
