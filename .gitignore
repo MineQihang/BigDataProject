@@ -148,3 +148,4 @@ yarn-error.log*
 */temp/
 */dataset/
 data/
+*/config/
