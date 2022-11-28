@@ -38,9 +38,7 @@ def get_videos_info_by_aid(aids):
     done = []
     loop = asyncio.get_event_loop()
     loop.run_until_complete(main_gather(aids))
-    return {
-        "data": [json.loads(x)["data"] for x in done]
-    }
+    return [json.loads(x)["data"] for x in done]
 
 
 if __name__ == "__main__":

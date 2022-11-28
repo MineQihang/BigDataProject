@@ -7,6 +7,7 @@ import numpy as np
 
 from fastapi import APIRouter, Form
 from functions.many_video_info import get_videos_info_by_aid
+from basic import *
 
 router = APIRouter(
     prefix="/video-recommend",
@@ -48,7 +49,11 @@ async def recommend_video_by_text(text: str = Form("")):
     tf = model[vector]
     # 计算相似度
     similarities = sparse_matrix.get_similarities(tf)
-    return get_videos_info_by_aid([aids[x] for x in np.argsort(similarities)[-20:]])
+    res = get_videos_info_by_aid([aids[x] for x in np.argsort(similarities)[-20:]])
+    views = [x["stat"]["view"] for x in res]
+    temp = np.argsort(views)
+    index = np.argsort([0.8 * t + 0.2 * temp[t] for t in range(len(temp))])
+    return successResponse(detail="返回成功", data=[res[i] for i in reversed(index)])
 
 
 if __name__ == "__main__":
