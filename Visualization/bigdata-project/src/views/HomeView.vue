@@ -51,11 +51,21 @@
                 style="height:120px;height:120px; width: 200px; border-radius: 4px;margin: 8px" fit="fill" />
             </el-col>
             <el-col :span="20">
-              <el-descriptions :title="sing.title" style="margin-top:8px">
+              <el-descriptions :title="sing.title" column="4" style="margin-top:8px">
+                <el-descriptions-item label="up">{{ sing.up }}</el-descriptions-item>
                 <el-descriptions-item label="播放量">{{ sing.view }}</el-descriptions-item>
-                <el-descriptions-item label="点赞率">{{ toPercent(sing.like_rate, 2) }}</el-descriptions-item>
-                <el-descriptions-item label="投币率">{{ toPercent(sing.coin_rate, 3) }}</el-descriptions-item>
-                <el-descriptions-item label="收藏率">{{ toPercent(sing.favorite_rate, 2) }}</el-descriptions-item>
+                <el-descriptions-item label="点赞">{{ sing.like + ' ' }}({{ toPercent(sing.like_rate, 2) }})
+                </el-descriptions-item>
+                <el-descriptions-item label="投币">{{ sing.coin + ' ' }}({{ toPercent(sing.coin_rate, 3) }})
+                </el-descriptions-item>
+                <el-descriptions-item label="收藏">{{ sing.favorite + ' ' }}({{ toPercent(sing.favorite_rate, 2) }})
+                </el-descriptions-item>
+                <el-descriptions-item label="分享">{{ sing.share + ' ' }}({{ toPercent(sing.share_rate, 3) }})
+                </el-descriptions-item>
+                <el-descriptions-item label="弹幕">{{ sing.danmu + ' ' }}({{ toPercent(sing.danmu_rate, 3) }})
+                </el-descriptions-item>
+                <el-descriptions-item label="评论">{{ sing.reply + ' ' }}({{ toPercent(sing.reply_rate, 3) }})
+                </el-descriptions-item>
                 <el-descriptions-item v-if="sing.honor" label="荣誉">
                   {{ sing.honor }}
                 </el-descriptions-item>
@@ -65,11 +75,14 @@
           </el-row>
 
           <el-row>
-            <el-col :span="11">
+            <el-col :span="8">
+              <div id="rank-chart" style="height:400px; width:400px;"></div>
+            </el-col>
+            <el-col :span="8">
               <div id="wordcloud-chart" style="height:400px; width:400px;"></div>
             </el-col>
 
-            <el-col :span="13">
+            <el-col :span="8">
               <div id="pie-chart" style="height:400px; width:400px;"></div>
             </el-col>
           </el-row>
@@ -106,6 +119,7 @@ const sing = reactive({
   id: '',
   pic: 'http://i2.hdslb.com/bfs/archive/c463451672bb74453c7229651dcb39be8fae13d7.jpg',
   title: "电子监听、全国断网，棱镜门背后，中国如何从末路狂奔到世界之巅",
+  up: 'dd',
   view: 0,
   danmu: 0,
   reply: 0,
@@ -116,6 +130,10 @@ const sing = reactive({
   like_rate: 0,
   coin_rate: 0,
   favorite_rate: 0,
+  share_rate: 0,
+  reply_rate: 0,
+  danmu_rate: 0,
+  interact_rate: 0,
   honor: "",
   word_data: [{ "value": "42", "name": "存活", }, { value: '30', name: 'VIVO' }],
   pie: []
@@ -128,6 +146,8 @@ const onSubmit = () => {
       let data = res.data.data
       sing.pic = data.pic
       sing.title = data.title
+      let owner = data.owner
+      sing.up = owner.name
       let stat = data.stat
       sing.view = stat.view
       sing.danmu = stat.danmaku
@@ -139,121 +159,174 @@ const onSubmit = () => {
       sing.like_rate = stat.like_rate
       sing.coin_rate = stat.coin_rate
       sing.favorite_rate = stat.favorite_rate
+      sing.danmu_rate = stat.danmaku_rate
+      sing.share_rate = stat.share_rate
+      sing.reply_rate = stat.reply_rate
+      sing.interact_rate = stat.interact_rate
       sing.honor = ''
       for (let h of data.honor) {
         sing.honor += h.desc
         sing.honor += '，'
       }
-    })
-  axios.post(sever + '/single-video/replies-word-data', formData)
-    .then((res) => {
+      sing.honor -= '，'
 
-      let data = res.data.data.word_data
-      sing.word_data = []
-      for (let i of data) {
-        let tmp = {}
-        tmp['value'] = String(i[1])
-        tmp['name'] = i[0]
-        sing.word_data.push(tmp)
-        if (sing.word_data.length >= 25) break
-      }
-
-      let myChart = echarts.init(document.getElementById("wordcloud-chart"))
-      // echarts参数设置
-      myChart.setOption({
-        backgroundColor: '#fff', // canvas背景颜色
-        // canvas标题配置项
+      let rank_data = data.rank_data
+      var rank = []
+      rank.push(rank_data.view)
+      rank.push(rank_data.like_rate)
+      rank.push(rank_data.interact_rate)
+      rank.push(rank_data.coin_rate)
+      rank.push(rank_data.share_rate)
+      rank.push(rank_data.favorite_rate)
+      var chartDom = document.getElementById('rank-chart')
+      var myChart = echarts.init(chartDom)
+      var option
+      option = {
         title: {
-          text: '评论云图',
-          left: '-1%',
-          textStyle: {
-            fontSize: 14,
-            color: '#3B3E41',
-            fontWeight: 'normal'
-          }
+          text: '排名雷达图'
+        },
+        legend: {
+          data: ['']
+        },
+        radar: {
+          // shape: 'circle',
+          indicator: [
+            { name: '播放量', max: 1 },
+            { name: '点赞率', max: 1 },
+            { name: '互动率', max: 1 },
+            { name: '投币率', max: 1 },
+            { name: '分享率', max: 1 },
+            { name: '收藏率', max: 1 }
+          ]
         },
         series: [
           {
-            type: 'wordCloud',
-            left: '10%',                 // X轴偏移量
-            top: '0%',                  // Y轴偏移量
-            width: '100%',               // canvas宽度大小
-            height: '100%',              // canvas高度大小
-            sizeRange: [12, 50],         //  词典字体大小范围配置
-            rotationRange: [0, 0],       // 词典字体旋转角度配置，默认不旋转
-            gridSize: 25,                // 词典字体间距配置
-            layoutAnimation: true,       // 为false词典过度会阻塞
-            textStyle: {                 // 词典样式配置
-              normal: {
-                color() {
-                  // 颜色随机渐变
-                  let colors = ['#fe9a8bb3', '#fe9a8bb3', '#fe9a8b03', '#9E87FFb3', '#9E87FFb3', '#9E87FFb3', '#fe9a8bb3', '#fe9a8bb3', '#fe9a8bb3', '#73DDFF', '#58D5FF']
-                  return colors[parseInt(Math.random() * 10)]
-                }
+            name: 'Budget vs spending',
+            type: 'radar',
+            data: [
+              {
+                value: rank,
+                name: 'Allocated Budget'
               }
-            },
-            // 渲染词典数据
-            // data: [{
-            //   // value: '50',          // 词典大小配置
-            //   // name: '评论云图'     // 词典名称配置
-            //   // textStyle: {          // 单独配置某个词典样式
-            //   //   shadowBlur: 4,
-            //   //   shadowOffsetY: 14,
-            //   //   color: '#BDBEFA'
-            //   // }
-            // },
-            // { value: '30', name: 'VIVO' },
-            // ]
-            data: sing.word_data
+            ]
           }
         ]
-      })
+      }
+      option && myChart.setOption(option)
+    }).then(() => {
+      axios.post(sever + '/single-video/replies-word-data', formData)
+        .then((res) => {
+
+          let data = res.data.data.word_data
+          sing.word_data = []
+          for (let i of data) {
+            let tmp = {}
+            tmp['value'] = String(i[1])
+            tmp['name'] = i[0]
+            sing.word_data.push(tmp)
+            if (sing.word_data.length >= 25) break
+          }
+
+          let myChart = echarts.init(document.getElementById("wordcloud-chart"))
+          // echarts参数设置
+          myChart.setOption({
+            backgroundColor: '#fff', // canvas背景颜色
+            // canvas标题配置项
+            title: {
+              text: '评论云图',
+              left: '-1%',
+              textStyle: {
+                // fontSize: 14,
+                color: '#3B3E41',
+                // fontWeight: 'bold'
+              }
+            },
+            series: [
+              {
+                type: 'wordCloud',
+                left: '10%',                 // X轴偏移量
+                top: '0%',                  // Y轴偏移量
+                width: '100%',               // canvas宽度大小
+                height: '100%',              // canvas高度大小
+                sizeRange: [12, 50],         //  词典字体大小范围配置
+                rotationRange: [0, 0],       // 词典字体旋转角度配置，默认不旋转
+                gridSize: 25,                // 词典字体间距配置
+                layoutAnimation: true,       // 为false词典过度会阻塞
+                textStyle: {                 // 词典样式配置
+                  normal: {
+                    color() {
+                      // 颜色随机渐变
+                      let colors = ['#fe9a8bb3', '#fe9a8bb3', '#fe9a8b03', '#9E87FFb3', '#9E87FFb3', '#9E87FFb3', '#fe9a8bb3', '#fe9a8bb3', '#fe9a8bb3', '#73DDFF', '#58D5FF']
+                      return colors[parseInt(Math.random() * 10)]
+                    }
+                  }
+                },
+                // 渲染词典数据
+                // data: [{
+                //   // value: '50',          // 词典大小配置
+                //   // name: '评论云图'     // 词典名称配置
+                //   // textStyle: {          // 单独配置某个词典样式
+                //   //   shadowBlur: 4,
+                //   //   shadowOffsetY: 14,
+                //   //   color: '#BDBEFA'
+                //   // }
+                // },
+                // { value: '30', name: 'VIVO' },
+                // ]
+                data: sing.word_data
+              }
+            ]
+          })
+        }).then(() => {
+          axios.post(sever + '/single-video/replies-sentiment', formData)
+            .then((res) => {
+
+              let data = res.data.data
+              console.log('数据：', data)
+              sing.pie = [{ value: data.pos_rate + 1, name: '好评' },
+              { value: data.neg_rate + 1, name: '差评' }]
+
+              var chartDom = document.getElementById('pie-chart')
+              var myChart = echarts.init(chartDom)
+              var option
+
+              option = {
+                title: {
+                  text: '评论情感',
+                  subtext: '',
+                  left: 'center'
+                },
+                tooltip: {
+                  trigger: 'item'
+                },
+                legend: {
+                  orient: 'vertical',
+                  left: 'left'
+                },
+                series: [
+                  {
+                    name: 'Access From',
+                    type: 'pie',
+                    radius: '50%',
+                    data: sing.pie,
+                    emphasis: {
+                      itemStyle: {
+                        shadowBlur: 10,
+                        shadowOffsetX: 0,
+                        shadowColor: 'rgba(0, 0, 0, 0.5)'
+                      }
+                    }
+                  }
+                ]
+              }
+              option && myChart.setOption(option)
+            })
+        })
     })
 
-  // axios.post(sever + '/single-video/replies-sentiment', formData)
-  //   .then((res) => {
 
-  //     let data = res.data.data
-  //     console.log('数据：', data)
-  //     sing.pie = [{ value: data.pos_rate + 1, name: '好评' },
-  //     { value: data.neg_rate + 1, name: '差评' }]
 
-  //     var chartDom = document.getElementById('pie-chart')
-  //     var myChart = echarts.init(chartDom)
-  //     var option
 
-  //     option = {
-  //       title: {
-  //         text: 'Referer of a Website',
-  //         subtext: 'Fake Data',
-  //         left: 'center'
-  //       },
-  //       tooltip: {
-  //         trigger: 'item'
-  //       },
-  //       legend: {
-  //         orient: 'vertical',
-  //         left: 'left'
-  //       },
-  //       series: [
-  //         {
-  //           name: 'Access From',
-  //           type: 'pie',
-  //           radius: '50%',
-  //           data: sing.pie,
-  //           emphasis: {
-  //             itemStyle: {
-  //               shadowBlur: 10,
-  //               shadowOffsetX: 0,
-  //               shadowColor: 'rgba(0, 0, 0, 0.5)'
-  //             }
-  //           }
-  //         }
-  //       ]
-  //     }
-
-  //     option && myChart.setOption(option)
-  //   })
 
 }
 const toPercent = (point, re) => {

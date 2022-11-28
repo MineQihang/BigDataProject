@@ -62,13 +62,36 @@
                   fit="fill" />
               </el-col>
             </a>
+
             <el-col :span="18">
-              <el-descriptions :title="bytext.titles[idx]" style="margin-top:8px">
-                <el-descriptions-item label="播放量">{{ bytext.views[idx] }}</el-descriptions-item>
-                <el-descriptions-item label="点赞率">{{ toPercent(bytext.like_rates[idx], 2) }}</el-descriptions-item>
-                <el-descriptions-item label="投币率">{{ toPercent(bytext.coin_rates[idx], 3) }}</el-descriptions-item>
-                <el-descriptions-item label="收藏率">{{ toPercent(bytext.favorite_rates[idx], 2) }}</el-descriptions-item>
-              </el-descriptions>
+              <a :href="'https://www.bilibili.com/video/' + bytext.bvs[idx]" target="_blank">
+                <!-- <div>
+                <a :href="'https://www.bilibili.com/video/' + bytext.bvs[idx]" target="_blank"
+                  style="height:22px;width:300px;margin-top:8px;"></a>
+              </div> -->
+                <el-descriptions :title="bytext.titles[idx]" column="4" style="margin-top:8px">
+                  <el-descriptions-item label="up">{{ bytext.ups[idx] }}</el-descriptions-item>
+                  <el-descriptions-item label="播放量">{{ bytext.views[idx] }}</el-descriptions-item> -->
+                  <el-descriptions-item label="点赞">
+                    {{ bytext.likes[idx] + ' ' }}({{ toPercent(bytext.like_rates[idx], 2) }})
+                  </el-descriptions-item>
+                  <el-descriptions-item label="投币">
+                    {{ bytext.coins[idx] + ' ' }}({{ toPercent(bytext.coin_rates[idx], 3) }})
+                  </el-descriptions-item>
+                  <el-descriptions-item label="收藏">
+                    {{ bytext.favorites[idx] + ' ' }}({{ toPercent(bytext.favorite_rates[idx], 2) }})
+                  </el-descriptions-item>
+                  <el-descriptions-item label="分享">
+                    {{ bytext.shares[idx] + ' ' }}({{ toPercent(bytext.share_rates[idx], 3) }})
+                  </el-descriptions-item>
+                  <el-descriptions-item label="弹幕">
+                    {{ bytext.danmus[idx] + ' ' }}({{ toPercent(bytext.danmu_rates[idx], 3) }})
+                  </el-descriptions-item>
+                  <el-descriptions-item label="评论">
+                    {{ bytext.replys[idx] + ' ' }}({{ toPercent(bytext.reply_rates[idx], 3) }})
+                  </el-descriptions-item>
+                </el-descriptions>
+              </a>
             </el-col>
             <el-divider />
           </el-row>
@@ -104,6 +127,7 @@ const bytext = reactive({
   pics: [],
   titles: [],
   bvs: [],
+  ups: [],
   views: [],
   danmus: [],
   replys: [],
@@ -114,27 +138,13 @@ const bytext = reactive({
   like_rates: [],
   coin_rates: [],
   favorite_rates: [],
+  danmu_rates: [],
+  share_rates: [],
+  reply_rates: [],
   honors: []
 })
 onMounted(() => {
-  // let myChart = echarts.init(document.getElementById('chart'));
-  // myChart.setOption({
-  //   title: {
-  //     text: 'ECharts 入门示例'
-  //   },
-  //   tooltip: {},
-  //   xAxis: {
-  //     data: ['衬衫', '羊毛衫', '雪纺衫', '裤子', '高跟鞋', '袜子']
-  //   },
-  //   yAxis: {},
-  //   series: [
-  //     {
-  //       name: '销量',
-  //       type: 'bar',
-  //       data: [5, 20, 36, 10, 10, 20]
-  //     }
-  //   ]
-  // });
+
 })
 const onSubmit = () => {
   let formData = new FormData()
@@ -147,6 +157,7 @@ const onSubmit = () => {
         bytext.titles.push(v.title)
         bytext.pics.push(v.pic)
         bytext.bvs.push(v.bvid)
+        bytext.ups.push(v.owner.name)
         let stat = v.stat
         bytext.views.push(stat.view)
         bytext.danmus.push(stat.danmaku)
@@ -158,6 +169,16 @@ const onSubmit = () => {
         bytext.like_rates.push(stat.like / (stat.view + 1))
         bytext.coin_rates.push(stat.coin / (stat.view + 1))
         bytext.favorite_rates.push(stat.favorite / (stat.view + 1))
+        bytext.danmu_rates.push(stat.danmaku / (stat.view + 1))
+        bytext.reply_rates.push(stat.reply / (stat.view + 1))
+        bytext.share_rates.push(stat.share / (stat.view + 1))
+        // let tmp = ''
+        // for (let h of v.honor) {
+        //   tmp += h.desc
+        //   tmp += '，'
+        // }
+        // tmp -= '，'
+        // bytext.honors.push(tmp)
       }
     })
 }
@@ -180,5 +201,9 @@ const toPercent = (point, re) => {
 #chart {
   width: 100%;
   height: 100px;
+}
+
+.el-descriptions__body {
+  z-index: 10000;
 }
 </style>
