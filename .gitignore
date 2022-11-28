@@ -146,3 +146,8 @@ yarn-error.log*
 
 # customize
 */temp/
+*/dataset/
+data/
+*/config/
+*/test.py
+*/test.ipynb
