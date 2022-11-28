@@ -32,7 +32,11 @@ def query_overall_situation():
     一个元素的重要组成结构为(cate: 小分区名, fq: 大分区名, month: 月份, num: 这个月视频的数量)
     '''
     col = mydb["overall"]
-    return list(col.find({}))
+    data = []
+    for x in col.find({}):
+        del x['_id']
+        data.append(x)
+    return data
 
 
 def query_exceed_rate(indexes):
