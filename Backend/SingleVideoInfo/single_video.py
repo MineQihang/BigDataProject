@@ -65,8 +65,8 @@ async def basic_info(video_id: str = Form("")):
     # TODO: rate所占百分比, spark调数据库
 
     # honor
-    data['honor'] = info_data['honor_reply']['honor']
-
+    if 'honor' in info_data['honor_reply'].keys():
+        data['honor'] = info_data['honor_reply']['honor']
 
     return successResponse(detail="视频基本信息返回成功", data = data) if data != None else failResponse(detail="视频基本信息返回失败")
 
