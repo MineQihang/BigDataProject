@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Form
 from basic import *
+from database.db import query_exceed_rate
 from functions.single_video_info import get_video_info_by_id
 from functions.sentiment_analysis import mul_sentiment_analysis
 from functions.word_segment import WordSegmenter
@@ -10,6 +11,7 @@ from transformers import AutoTokenizer, AutoModelForTokenClassification
 
 import re
 import torch
+from math import log
 
 sentiment_tokenizer=BertTokenizer.from_pretrained('IDEA-CCNL/Erlangshen-MegatronBert-1.3B-Sentiment')
 sentiment_model=AutoModelForSequenceClassification.from_pretrained('IDEA-CCNL/Erlangshen-MegatronBert-1.3B-Sentiment')
@@ -61,8 +63,25 @@ async def basic_info(video_id: str = Form("")):
     data['stat']['like_rate'] = info_data['stat']['like']/info_data['stat']['view']
     data['stat']['coin_rate'] = info_data['stat']['coin']/info_data['stat']['view']
     data['stat']['favorite_rate'] = info_data['stat']['favorite']/info_data['stat']['view']
+    data['stat']['reply_rate'] = info_data['stat']['reply']/info_data['stat']['view']
+    data['stat']['danmaku_rate'] = info_data['stat']['danmaku']/info_data['stat']['view']
+    data['stat']['share_rate'] = info_data['stat']['share']/info_data['stat']['view']
+    data['stat']['interact_rate'] = (info_data['stat']['danmaku']+info_data['stat']['reply'])/log(info_data['stat']['view']+2)
 
-    # TODO: rate所占百分比, spark调数据库
+
+    # rank 各项指标超过数据库中多少视频
+    rank_data = {}
+    rank_data['view'] = info_data['stat']['view']
+    rank_data['coin_rate'] = data['stat']['coin_rate']
+    rank_data['interact_rate'] = data['stat']['interact_rate']
+    rank_data['reply_rate'] = data['stat']['reply_rate']
+    rank_data['danmaku_rate'] = data['stat']['danmaku_rate']
+    rank_data['like_rate'] = data['stat']['like_rate']
+    rank_data['share_rate'] = data['stat']['share_rate']
+    rank_data['favorite_rate'] = data['stat']['favorite_rate']
+    rank_data = query_exceed_rate(rank_data)
+    data['rank_data'] = rank_data
+
 
     # honor
     if 'honor' in info_data['honor_reply'].keys():
@@ -101,7 +120,7 @@ async def replies_word_data(video_id: str = Form("")):
     for word in words[0]:
         if word not in stop_word_list and len(word) > 1: # 非停用词并且非单字
             tmp_word = re.findall(r'[\u4e00-\u9fa5]+',word)
-            if len(tmp_word)== 1:
+            if len(tmp_word)== 1 and len(tmp_word[0]) > 1:
                 if tmp_word[0] not in word_data.keys():
                     word_data[tmp_word[0]] = 0
                 word_data[tmp_word[0]] += 1
@@ -129,9 +148,11 @@ async def replies_sentiment(video_id: str = Form("")):
         return failResponse(detail="视频aid或bid未输入")
 
     info_data = get_video_info_by_id(bid = video_id) if video_id.startswith("BV") else get_video_info_by_id(aid = video_id)
-    
-    sentiment = mul_sentiment_analysis(info_data['replies'], sentiment_tokenizer, sentiment_model)
 
+    replies = [' '.join(re.findall(r'[\u4e00-\u9fa5]+',x)) for x in info_data['replies']]
+
+    sentiment = mul_sentiment_analysis(replies, sentiment_tokenizer, sentiment_model)
+    
     data["sentiment"] = sentiment
 
     data["pos_num"] = sentiment.count("positive")
