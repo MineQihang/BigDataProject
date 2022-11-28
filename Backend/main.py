@@ -3,11 +3,13 @@ from fastapi.middleware.cors import CORSMiddleware # 跨域
 
 from SingleVideoInfo import single_video  # 测试视频推荐时要注释掉
 from VideoRecommendation import video_recommend
+from AllVideoInfo import all_video
 
 app = FastAPI(docs_url=None, redoc_url=None)
 
 app.include_router(single_video.router)  # 测试视频推荐时要注释掉
 app.include_router(video_recommend.router)
+app.include_router(all_video.router)
 
 origins = ["*"] # 跨域
 
