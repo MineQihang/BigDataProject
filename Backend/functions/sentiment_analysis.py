@@ -18,17 +18,13 @@ def sentiment_analysis_sentences(sentence:str, tokenizer, model):
         return "negative"
     return "positive"
 
-def mul_sentiment_analysis(sentences: List[str], tokenizer, model, thread_num = 1):
+def mul_sentiment_analysis(sentences: List[str], tokenizer, model):
     '''
     分析句子情感
     :param sentences 待情感分析句子列表
-    :param thread_num 线程数
     :param tokenizer
     :param model
     :return sentiment 情感分析结果
     '''
-
-    data = [(sentence,tokenizer,model)for sentence in sentences]
-    pool = mul.Pool(thread_num)
-    sentiment = pool.starmap(sentiment_analysis_sentences, data)
-    return sentiment
+    data = [sentiment_analysis_sentences(sentence,tokenizer,model)for sentence in sentences]
+    return data
