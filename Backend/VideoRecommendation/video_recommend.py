@@ -52,7 +52,7 @@ async def recommend_video_by_text(text: str = Form("")):
     res = get_videos_info_by_aid([aids[x] for x in np.argsort(similarities)[-20:]])
     views = [x["stat"]["view"] for x in res]
     temp = np.argsort(views)
-    index = np.argsort([0.8 * t + 0.2 * temp[t] for t in range(len(temp))])
+    index = np.argsort([0.99 * t + 0.01 * temp[t] for t in range(len(temp))])
     return successResponse(detail="返回成功", data=[res[i] for i in reversed(index)])
 
 
