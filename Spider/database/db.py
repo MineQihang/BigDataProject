@@ -41,4 +41,11 @@ def update_data():
             "share_rate": item["share"] / (item["view"] + 1),
             "interact_rate": (item["reply"] + item["danmaku"]) / np.log(item["view"] + 2),
             }})for item in tqdm(cursor)])
-        
+
+def query_all_video_tags():
+    '''
+    查询所有视频的tags
+    '''
+    col = mydb["bilibili"]
+    cursor = col.find({}).limit(2000000)
+    return [(x["tag"], x["pubdate"]) for x in tqdm(cursor)]

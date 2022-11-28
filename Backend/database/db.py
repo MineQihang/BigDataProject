@@ -53,3 +53,65 @@ def query_words_count(num):
     '''
     col = mydb["result"]
     return dict((x["_1"], x["_2"]) for x in col.find({}).limit(num).sort("_2", -1))
+
+
+def query_tags_count_by_word(word:str="", num=10):
+    '''
+    用词语检索出相关的num个词tags
+    :param word 一个词 **传入word=""即可实现查询所有tag中前num个**
+    :return tag列表 如["1", "2"] 
+    '''
+    col = mydb["tags_count"]
+    res = col.find({"tag": {"$regex": word}}).sort("count", -1).limit(num)
+    return [(x["tag"], x["count"]) for x in res]
+
+
+def query_tag_count_change(tag=""):
+    '''
+    一个tag每个月份的变化
+    :param tag
+    :return [(month, count), ...]
+    '''
+    col = mydb["month_tags"]
+    res = col.find({"tag": tag}).sort("month")
+    return [(x["month"], x["count"]) for x in res]
+
+
+def query_tags_count_in_month(month=None, num=10):
+    '''
+    :param month 不指定就是返回所有月份的数据, 指定了就是那个月的排名前num的tag
+    :param num 要看前多少个
+    :return {1: [(tag, count), ...], 2:[], ...}
+    '''
+    col = mydb["month_tags"]
+    if month != None:
+        res = col.find({"month": month}).sort("count", -1).limit(num)
+        return [(x["tag"], x["count"]) for x in res]
+    else:
+        res = col.aggregate([{
+            "$facet": dict((str(month), [ { "$match": { "month":month } }, {"$sort" : {"count": -1}}, { "$limit": num } ]) for month in range(1, 12))
+        }]) 
+        return dict((int(month), [(x["tag"], x["count"]) for x in mp]) for temp in res for month, mp in temp.items())
+        
+
+def query_tags_relation(tags):
+    '''
+    根据tags返回关联度关系
+    :param tags list 比如["知识分享官", "打卡挑战", "学习" ...]
+    :return 三元组 [(index_1, index_2, relation_rate), ...]
+    '''
+    col = mydb["tags_relation"]
+    col_tags = mydb["tags_count"]
+    try:
+        ans = []
+        tags_count = [col_tags.find_one({"tag": tags[i]})["count"] for i in range(len(tags))]
+        for i in range(len(tags)):
+            temp = []
+            for j in range(i):
+                res = col.find_one({"tag1": tags[i], "tag2": tags[j]})
+                temp.append(res.get("count", 0) if res else 0)
+            ans.extend([(i, j, 2 * temp[j] / (tags_count[i] + tags_count[j])) for j in range(len(temp))])
+            ans.extend([(j, i, 2 * temp[j] / (tags_count[i] + tags_count[j])) for j in range(len(temp))])
+        return ans
+    except:
+        raise Exception("tag不在数据库中")
