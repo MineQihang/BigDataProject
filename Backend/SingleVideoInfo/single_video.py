@@ -130,6 +130,8 @@ async def replies_word_data(video_id: str = Form("")):
     # 排序
     word_data = sorted(word_data.items(), key=lambda x: x[1], reverse = True)
 
+    # print(word_data)
+
     data['word_data'] = word_data
 
     return successResponse(detail="视频评论词频统计返回成功", data = data) if data != None else failResponse(detail="视频评论词频统计返回失败")
