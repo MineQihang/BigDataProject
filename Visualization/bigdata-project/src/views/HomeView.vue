@@ -186,7 +186,6 @@ const onSubmit = () => {
       if (data.honor) {
         for (let h of data.honor) {
           sing.honor += h.desc
-          console.log('honor1: ' + sing.honor)
           sing.honor += '，'
         }
       }

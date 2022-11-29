@@ -83,43 +83,7 @@
 
 
           <vedio v-for="(vedio, idx) in list.vedios" :key="idx" :msg="vedio"></vedio>
-          <!--
-          <el-row v-for="(pic, idx) in bytext.pics" :key="idx">
-            <a :href="'https://www.bilibili.com/video/' + bytext.bvs[idx]" target="_blank">
-              <el-col :span="6">
-                <el-image :src="pic" alt="" style="height:120px; width: 200px; border-radius: 4px; margin: 8px"
-                  fit="fill" />
-              </el-col>
-            </a>
 
-            <el-col :span="18">
-              <a :href="'https://www.bilibili.com/video/' + bytext.bvs[idx]" target="_blank">
-                <el-descriptions :title="bytext.titles[idx]" column="4" style="margin-top:8px">
-                  <el-descriptions-item label="up">{{ bytext.ups[idx] }}</el-descriptions-item>
-                  <el-descriptions-item label="播放量">{{ bytext.views[idx] }}</el-descriptions-item>
-                  <el-descriptions-item label="点赞">
-                    {{ bytext.likes[idx] + ' ' }}({{ toPercent(bytext.like_rates[idx], 2) }})
-                  </el-descriptions-item>
-                  <el-descriptions-item label="投币">
-                    {{ bytext.coins[idx] + ' ' }}({{ toPercent(bytext.coin_rates[idx], 3) }})
-                  </el-descriptions-item>
-                  <el-descriptions-item label="收藏">
-                    {{ bytext.favorites[idx] + ' ' }}({{ toPercent(bytext.favorite_rates[idx], 2) }})
-                  </el-descriptions-item>
-                  <el-descriptions-item label="分享">
-                    {{ bytext.shares[idx] + ' ' }}({{ toPercent(bytext.share_rates[idx], 3) }})
-                  </el-descriptions-item>
-                  <el-descriptions-item label="弹幕">
-                    {{ bytext.danmus[idx] + ' ' }}({{ toPercent(bytext.danmu_rates[idx], 3) }})
-                  </el-descriptions-item>
-                  <el-descriptions-item label="评论">
-                    {{ bytext.replys[idx] + ' ' }}({{ toPercent(bytext.reply_rates[idx], 3) }})
-                  </el-descriptions-item>
-                </el-descriptions>
-              </a>
-            </el-col>
-            <el-divider />
-          </el-row> -->
         </div>
       </el-main>
 
@@ -156,27 +120,7 @@ let text = reactive({
   id5: '',
   id6: '',
 })
-// let temp = reactive({
-//   pics: [],
-//   titles: [],
-//   bvs: [],
-//   ups: [],
-//   views: [],
-//   danmus: [],
-//   replys: [],
-//   favorites: [],
-//   coins: [],
-//   shares: [],
-//   likes: [],
-//   like_rates: [],
-//   coin_rates: [],
-//   favorite_rates: [],
-//   danmu_rates: [],
-//   share_rates: [],
-//   reply_rates: [],
-//   honors: []
-// })
-// let bytext = temp
+
 const list = reactive({
   vedios: []
 })
@@ -193,7 +137,6 @@ const onSubmit = () => {
     .then((res) => {
       // console.log('数据：', res)
       let data = res.data.data
-      // bytext = temp
       list.vedios = []
       for (let v of data) {
         let tmp = {}
@@ -217,33 +160,6 @@ const onSubmit = () => {
         tmp.reply_rate = stat.reply / (stat.view + 1)
         list.vedios.push(tmp)
       }
-      // for (let v of data) {
-      //   bytext.titles.push(v.title)
-      //   bytext.pics.push(v.pic)
-      //   bytext.bvs.push(v.bvid)
-      //   bytext.ups.push(v.owner.name)
-      //   let stat = v.stat
-      //   bytext.views.push(stat.view)
-      //   bytext.danmus.push(stat.danmaku)
-      //   bytext.replys.push(stat.reply)
-      //   bytext.favorites.push(stat.favorite)
-      //   bytext.coins.push(stat.coin)
-      //   bytext.shares.push(stat.share)
-      //   bytext.likes.push(stat.like)
-      //   bytext.like_rates.push(stat.like / (stat.view + 1))
-      //   bytext.coin_rates.push(stat.coin / (stat.view + 1))
-      //   bytext.favorite_rates.push(stat.favorite / (stat.view + 1))
-      //   bytext.danmu_rates.push(stat.danmaku / (stat.view + 1))
-      //   bytext.reply_rates.push(stat.reply / (stat.view + 1))
-      //   bytext.share_rates.push(stat.share / (stat.view + 1))
-      //   // let tmp = ''
-      //   // for (let h of v.honor) {
-      //   //   tmp += h.desc
-      //   //   tmp += '，'
-      //   // }
-      //   // tmp -= '，'
-      //   // bytext.honors.push(tmp)
-      // }
     })
 }
 
