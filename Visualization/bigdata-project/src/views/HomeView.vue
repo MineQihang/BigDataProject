@@ -26,34 +26,45 @@
       </el-aside>
 
       <el-main style="width:100%">
-        <div v-show="page.v === '1'">
+        <div v-show="page.which === '1'">
           <div>
             <h2 style="width: 100%; text-align: center;">饼图</h2>
-            <div id="pie-chart" class="chart"></div>
+            <div id="pie-chart" class="chart" v-loading="loading_1"></div>
           </div>
           <el-divider></el-divider>
           <div>
             <h2 style="width: 100%; text-align: center;">词云图</h2>
-            <div id="wordcloud-chart" class="chart"></div>
+            <div id="wordcloud-chart" class="chart" v-loading="loading_1"></div>
           </div>
           <el-divider></el-divider>
           <div>
             <h2 style="width: 100%; text-align: center;">热力图</h2>
-            <div id="heat-chart" class="chart"></div>
+            <div class="choose-container">
+              <div style="display: flex; align-items: center; justify-content: center;">
+                <div style="width: auto;">请输入标签：</div>
+                <el-select v-model="value" multiple filterable remote reserve-keyword placeholder="Please enter a tag"
+                  remote-show-suffix :remote-method="remoteMethod" :loading="loading"
+                  style="width:80%; margin-left: 10px; margin-right: 10px;">
+                  <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
+                </el-select>
+                <el-button type="primary" @click="clickQuery">查询</el-button>
+              </div>
+            </div>
+            <div id="heat-chart" class="chart" v-loading="loading_3"></div>
           </div>
           <el-divider></el-divider>
           <div>
             <h2 style="width: 100%; text-align: center;">tags柱状图</h2>
-            <div id="bar-chart" class="chart"></div>
+            <div id="bar-chart" class="chart" v-loading="loading_2"></div>
           </div>
           <el-divider></el-divider>
           <div>
             <h2 style="width: 100%; text-align: center;">月份tags动态折线图</h2>
-            <div id="line-chart" class="chart"></div>
+            <div id="line-chart" class="chart" v-loading="loading_1"></div>
           </div>
         </div>
 
-        <div v-if="page.v === '2'">
+        <div v-if="page.which === '2'">
           <el-row>
             <el-col :span="12">
               <el-form label-width="120px">
@@ -62,18 +73,19 @@
                 </el-form-item>
                 <el-form-item>
                   <el-button type="primary" @click="onSubmit">查询</el-button>
-                  <el-button>清空</el-button>
+                  <el-button @click="() => { sing.id = '' }">清空</el-button>
                 </el-form-item>
               </el-form>
             </el-col>
           </el-row>
-
-          <vedio :msg="sing"></vedio>
-
+          <!-- <div v-loading="page.loading_info"> -->
+          <vedio :msg="sing" v-show="page.info_show"></vedio>
+          <!-- </div> -->
           <el-row style="margin-top:0px;">
             <el-col :span="8">
               <div id="rank-chart" style="height:400px; width:400px;"></div>
-              <span v-if="page.rank_chart_show" style="position:absolute;top:22px;left: 5px;font-size: 16px;">(超过其他视频百分比)</span>
+              <span v-if="page.rank_chart_show"
+                style="position:absolute;top:22px;left: 5px;font-size: 16px;">(超过其他视频百分比)</span>
             </el-col>
             <el-col :span="8">
               <div id="wordcloud-chart2" style="height:400px; width:400px;"></div>
@@ -104,14 +116,19 @@ import {
 } from '@element-plus/icons-vue'
 const sever = 'http://10.234.160.121:5000'
 const page = reactive({
-  v: '1',
+  which: '1',
   rank_chart_show: 0,
+  info_show: false,
+  loading_info: false,
+  loading1: false,
+  loading2: false,
+  loading3: false,
 })
 const click1 = () => {
-  page.v = '1'
+  page.which = '1'
 }
 const click2 = () => {
-  page.v = '2'
+  page.which = '2'
 }
 const sing = reactive({
   id: '',
@@ -138,6 +155,8 @@ const sing = reactive({
   pie: []
 })
 const onSubmit = () => {
+  page.loading_info = true
+
   let formData = new FormData()
   formData.append('video_id', sing.id)
   axios.post(sever + '/single-video/basic-info', formData)
@@ -171,8 +190,11 @@ const onSubmit = () => {
           sing.honor += '，'
         }
       }
-      if (data.honor) sing.honor = sing.honor.substring(0, sing.honor.length-1);
+      if (data.honor) sing.honor = sing.honor.substring(0, sing.honor.length - 1)
       // console.log('honor: '+sing.honor)
+      page.loading_info = false
+      page.info_show = true
+
       let rank_data = data.rank_data
       var rank = []
       rank.push(rank_data.view)
@@ -231,8 +253,8 @@ const onSubmit = () => {
             let tmp = {}
             tmp['value'] = String(i[1])
             tmp['name'] = i[0]
-            tmp['textStyle']={}
-            tmp['textStyle']['color'] = color() 
+            tmp['textStyle'] = {}
+            tmp['textStyle']['color'] = color()
             // console.log(tmp)
             sing.word_data.push(tmp)
             if (sing.word_data.length >= 25) break
@@ -303,18 +325,17 @@ const onSubmit = () => {
                 title: {
                   text: '评论情感',
                   subtext: '',
-                  left: 'center'
+                  left: 'left'
                 },
                 tooltip: {
                   trigger: 'item'
                 },
                 legend: {
                   orient: 'vertical',
-                  left: 'left'
+                  left: 'right'
                 },
                 series: [
                   {
-                    name: 'Access From',
                     type: 'pie',
                     radius: '50%',
                     data: sing.pie,
@@ -335,9 +356,50 @@ const onSubmit = () => {
 
 }
 
+// const clear = () => { sing.id = '' }
+
+const list = ref([])
+const options = ref([])
+const value = ref([])
+const loading = ref(false)
+
+const remoteMethod = (query) => {
+  let formData = new FormData()
+  formData.append("word", query)
+  loading.value = true
+  axios.post(sever + '/all-video/tags-count-by-word', formData)
+    .then((res) => {
+      let data = res.data.data["tags_count_by_word"]
+      list.value = data.map((item) => {
+        return { value: `${item[0]}`, label: `${item[0]}` }
+      })
+      loading.value = false
+      options.value = list.value.filter((item) => {
+        return item.label.toLowerCase().includes(query.toLowerCase())
+      })
+    })
+}
+
+const clickQuery = () => {
+  // console.log(value)
+  let tagData = new FormData()
+  let tags = value.value.join(",")
+  tagData.append("tags", tags)
+  loading_3.value = true
+  axios.post(sever + '/all-video/tags-relation', tagData)
+    .then((res) => {
+      let data = res.data.data
+      displayHeat(tags, data["tags_relation"])
+      loading_3.value = false
+    })
+}
+
+const loading_1 = ref(true)
+const loading_2 = ref(true)
+const loading_3 = ref(true)
 
 const displayWordcloud = (data) => {
-  let chart = echarts.init(document.getElementById('wordcloud-chart'));
+  let chart = echarts.init(document.getElementById('wordcloud-chart'))
   // console.log(data)
   let new_data = []
   for (let k in data) {
@@ -370,7 +432,7 @@ const displayWordcloud = (data) => {
             Math.round(Math.random() * 160),
             Math.round(Math.random() * 160),
             Math.round(Math.random() * 160)
-          ].join(',') + ')';
+          ].join(',') + ')'
         }
       },
       emphasis: {
@@ -382,13 +444,13 @@ const displayWordcloud = (data) => {
       },
       data: new_data
     }]
-  });
+  })
 }
 
 const displayPie = (data) => {
-  let chartDom = document.getElementById('pie-chart');
-  let myChart = echarts.init(chartDom);
-  let option;
+  let chartDom = document.getElementById('pie-chart')
+  let myChart = echarts.init(chartDom)
+  let option
   let new_data = []
   for (let k in data) {
     new_data.push({ "name": k, "value": data[k] })
@@ -419,18 +481,18 @@ const displayPie = (data) => {
         data: new_data
       }
     ]
-  };
-  option && myChart.setOption(option);
+  }
+  option && myChart.setOption(option)
 }
 
 const displayLine = (data) => {
-  let chartDom = document.getElementById('line-chart');
-  let myChart = echarts.init(chartDom);
-  let option;
-  let areas = [];
-  for (let k in data[1]) areas.push(k);
-  let raw_data = [];
-  raw_data.push(["Month", "Area", "Count"]);
+  let chartDom = document.getElementById('line-chart')
+  let myChart = echarts.init(chartDom)
+  let option
+  let areas = []
+  for (let k in data[1]) areas.push(k)
+  let raw_data = []
+  raw_data.push(["Month", "Area", "Count"])
   for (let month in data) {
     for (let area in data[month]) {
       raw_data.push([month, area, data[month][area]])
@@ -440,10 +502,10 @@ const displayLine = (data) => {
   // console.log(raw_data)
 
   function run(_rawData) {
-    const datasetWithFilters = [];
-    const seriesList = [];
+    const datasetWithFilters = []
+    const seriesList = []
     echarts.util.each(areas, function (area) {
-      var datasetId = 'dataset_' + area;
+      var datasetId = 'dataset_' + area
       datasetWithFilters.push({
         id: datasetId,
         fromDatasetId: 'dataset_raw',
@@ -456,7 +518,7 @@ const displayLine = (data) => {
             ]
           }
         }
-      });
+      })
       seriesList.push({
         type: 'line',
         datasetId: datasetId,
@@ -465,7 +527,7 @@ const displayLine = (data) => {
         endLabel: {
           show: true,
           formatter: function (params) {
-            return params.value[2] + ': ' + params.value[0];
+            return params.value[2] + ': ' + params.value[0]
           }
         },
         labelLayout: {
@@ -481,8 +543,8 @@ const displayLine = (data) => {
           itemName: 'Month',
           tooltip: ['Count']
         }
-      });
-    });
+      })
+    })
     option = {
       animationDuration: 5000,
       dataset: [
@@ -510,34 +572,34 @@ const displayLine = (data) => {
         right: 140
       },
       series: seriesList
-    };
-    myChart.setOption(option);
+    }
+    myChart.setOption(option)
   }
-  run(raw_data);
-  option && myChart.setOption(option);
+  run(raw_data)
+  option && myChart.setOption(option)
 }
 
 const displayBar = (data) => {
   // console.log(data)
   // 基于准备好的dom，初始化echarts实例
-  var myChart = echarts.init(document.getElementById('bar-chart'));
-  var updateFrequency = 1000;	// 数据更新速度
-  var new_data = [];
-  var startIndex = 0;
+  var myChart = echarts.init(document.getElementById('bar-chart'))
+  var updateFrequency = 1000	// 数据更新速度
+  var new_data = []
+  var startIndex = 0
   for (let month in data) {
-    let tags = [];
-    let counts = [];
+    let tags = []
+    let counts = []
     data[month].forEach(element => {
-      tags.push(element[0]);
-      counts.push(element[1]);
-    });
+      tags.push(element[0])
+      counts.push(element[1])
+    })
     new_data.push({ "month": month, "tags": tags, "counts": counts })
   }
   // console.log(new_data)
   // 获取第一个数据
-  var startMonth = new_data[startIndex].month;
-  var startTag = new_data[startIndex].tags;
-  var startCount = new_data[startIndex].counts;
+  var startMonth = new_data[startIndex].month
+  var startTag = new_data[startIndex].tags
+  var startCount = new_data[startIndex].counts
 
   var option = {
     // 图标的上下左右边界
@@ -561,7 +623,7 @@ const displayBar = (data) => {
       axisLabel: {
         // 圆整 X 轴 参数
         formatter: function (n) {
-          return Math.round(n) + '';
+          return Math.round(n) + ''
         }
       }
     },
@@ -597,7 +659,7 @@ const displayBar = (data) => {
         /* color: 'rgb(13,208,229)' */
         color: function (param) {
 
-          return 'rgb(84,111,198)';//countryColors[param.name];
+          return 'rgb(84,111,198)'//countryColors[param.name];
         }
       },
       encode: {
@@ -635,44 +697,44 @@ const displayBar = (data) => {
         z: 100
       }]
     }
-  };
+  }
 
   // 使用刚指定的配置项和数据显示图表。
-  myChart.setOption(option);
+  myChart.setOption(option)
   for (var i = startIndex; i < new_data.length - 1; ++i) {
     (function (i) {
       setTimeout(function () {
-        updateMonth(new_data[i + 1]);
-      }, (i + 1) * updateFrequency);
-    })(i);
+        updateMonth(new_data[i + 1])
+      }, (i + 1) * updateFrequency)
+    })(i)
   }
 
   // 更新数据
   function updateMonth(dt) {
-    option.yAxis.data = dt.tags;
-    option.series[0].data = dt.counts;
-    option.graphic.elements[0].style.text = "" + dt.month + "月";
+    option.yAxis.data = dt.tags
+    option.series[0].data = dt.counts
+    option.graphic.elements[0].style.text = "" + dt.month + "月"
     // 使用刚指定的配置项和数据显示图表。
-    myChart.setOption(option);
+    myChart.setOption(option)
   }
 }
 
 const displayHeat = (tags, items) => {
-  console.log(items)
+  // console.log(items)
 
-  var chartDom = document.getElementById('heat-chart');
-  var myChart = echarts.init(chartDom);
-  var option;
+  var chartDom = document.getElementById('heat-chart')
+  var myChart = echarts.init(chartDom)
+  var option
 
   // prettier-ignore
-  const hours = tags.split(",");
+  const hours = tags.split(",")
   // prettier-ignore
-  const days = tags.split(",");
+  const days = tags.split(",")
 
   const data = items
     .map(function (item) {
-      return [item[1], item[0], item[2] || '-'];
-    });
+      return [item[1], item[0], item[2] || '-']
+    })
   option = {
     tooltip: {
       position: 'top'
@@ -705,7 +767,7 @@ const displayHeat = (tags, items) => {
     },
     series: [
       {
-        name: 'Punch Card',
+        name: '关系度',
         type: 'heatmap',
         data: data,
         label: {
@@ -719,36 +781,41 @@ const displayHeat = (tags, items) => {
         }
       }
     ]
-  };
+  }
 
-  option && myChart.setOption(option);
+  option && myChart.setOption(option)
 
 }
 
 
 onMounted(() => {
-  let formData = new FormData();
-  formData.append("num", 20);
+  let formData = new FormData()
+  formData.append("num", 20)
   axios.post(sever + '/all-video/all-video-info', formData)
     .then((res) => {
-      let data = res.data.data;
+      let data = res.data.data
       displayPie(data["rate_data"])
-      displayWordcloud(data["words_count"]);
-      displayLine(data["line_data"]);
-    });
+      displayWordcloud(data["words_count"])
+      displayLine(data["line_data"])
+      loading_1.value = false
+    })
   axios.post(sever + '/all-video/tags-count-in-month')
     .then((res) => {
-      let data = res.data.data;
-      displayBar(data["tags_count_in_month"]);
-    });
-  let tagData = new FormData();
-  let tags = "知识分享官,打卡挑战,学习";
-  tagData.append("tags", tags)
-  axios.post(sever + '/all-video/tags-relation', tagData)
+      let data = res.data.data
+      displayBar(data["tags_count_in_month"])
+      loading_2.value = false
+    })
+
+  loading.value = false
+  axios.post(sever + '/all-video/tags-count-by-word')
     .then((res) => {
-      let data = res.data.data;
-      displayHeat(tags, data["tags_relation"]);
-    });
+      let data = res.data.data["tags_count_by_word"]
+      list.value = data.map((item) => {
+        return { value: `${item[0]}`, label: `${item[0]}` }
+      })
+      options.value = list.value
+      loading.value = false
+    })
 })
 
 </script>

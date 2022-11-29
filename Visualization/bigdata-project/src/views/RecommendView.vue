@@ -55,7 +55,7 @@
                 </el-form-item>
                 <el-form-item>
                   <el-button type="primary" @click="onSubmit2">推荐一下</el-button>
-                  <el-button>清空</el-button>
+                  <el-button @click="clear">清空</el-button>
                 </el-form-item>
               </el-form>
             </el-col>
@@ -74,7 +74,7 @@
                 </el-form-item>
                 <el-form-item style="margin-left:30px">
                   <el-button type="primary" @click="onSubmit">推荐一下</el-button>
-                  <el-button>清空</el-button>
+                  <el-button @click="() => { text.t = '' }">清空</el-button>
                 </el-form-item>
               </el-form>
             </el-col>
@@ -287,6 +287,14 @@ const onSubmit2 = () => {
         list2.vedios.push(tmp)
       }
     })
+}
+const clear = () => {
+  text.id1 = ''
+  text.id2 = ''
+  text.id3 = ''
+  text.id4 = ''
+  text.id5 = ''
+  text.id6 = ''
 }
 
 </script>
