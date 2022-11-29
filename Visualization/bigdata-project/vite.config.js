@@ -22,15 +22,18 @@ export default defineConfig({
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
+  },
+  server: {
+    host: '0.0.0.0',
+    port: 4000,
+    cors: true
+    // proxy: {
+    //   '/bfs': {
+    //     target: 'http://i2.hdslb.com:80',  //你要跨域访问的网址
+    //     changeOrigin: true,   // 允许跨域
+    //   }
+    // }
   }
-  // server: {
-  //   proxy: {
-  //     '/bfs': {
-  //       target: 'http://i2.hdslb.com:80',  //你要跨域访问的网址
-  //       changeOrigin: true,   // 允许跨域
-  //     }
-  //   }
-  // }
 })
 
 

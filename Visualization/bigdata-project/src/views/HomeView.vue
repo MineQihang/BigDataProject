@@ -3,7 +3,7 @@
     <el-container>
 
       <el-aside width="200px">
-        <el-row class="" style="width:200px">
+        <el-row class="" style="width:200px;position: fixed;">
           <el-col>
 
             <el-menu default-active="1">
@@ -28,17 +28,17 @@
       <el-main style="width:100%">
         <div v-show="page.which === '1'">
           <div>
-            <h2 style="width: 100%; text-align: center;">饼图</h2>
+            <h2 style="width: 100%; text-align: center;">2022年各个分区视频发布量占比</h2>
             <div id="pie-chart" class="chart" v-loading="loading_1"></div>
           </div>
           <el-divider></el-divider>
           <div>
-            <h2 style="width: 100%; text-align: center;">词云图</h2>
+            <h2 style="width: 100%; text-align: center;">2022年视频标题词云图</h2>
             <div id="wordcloud-chart" class="chart" v-loading="loading_1"></div>
           </div>
           <el-divider></el-divider>
           <div>
-            <h2 style="width: 100%; text-align: center;">热力图</h2>
+            <h2 style="width: 100%; text-align: center;">tags关联度热力图</h2>
             <div class="choose-container">
               <div style="display: flex; align-items: center; justify-content: center;">
                 <div style="width: auto;">请输入标签：</div>
@@ -54,12 +54,12 @@
           </div>
           <el-divider></el-divider>
           <div>
-            <h2 style="width: 100%; text-align: center;">tags柱状图</h2>
+            <h2 style="width: 100%; text-align: center;" @click="displayBar(bar_data)">2022年学习视频月度热门tags变化柱状图</h2>
             <div id="bar-chart" class="chart" v-loading="loading_2"></div>
           </div>
           <el-divider></el-divider>
           <div>
-            <h2 style="width: 100%; text-align: center;">月份tags动态折线图</h2>
+            <h2 style="width: 100%; text-align: center;" @click="displayLine(line_data)">2022年学习视频月份tags动态折线图</h2>
             <div id="line-chart" class="chart" v-loading="loading_1"></div>
           </div>
         </div>
@@ -114,6 +114,10 @@ import {
   Location,
   Setting,
 } from '@element-plus/icons-vue'
+
+const bar_data = ref([])
+const line_data = ref([])
+
 const sever = 'http://10.234.160.121:5000'
 const page = reactive({
   which: '1',
@@ -212,6 +216,15 @@ const onSubmit = () => {
         legend: {
           data: ['']
         },
+        toolbox: {
+          show: true,
+          feature: {
+            mark: { show: true },
+            dataView: { show: true, readOnly: false },
+            restore: { show: true },
+            saveAsImage: { show: true }
+          }
+        },
         radar: {
           // shape: 'circle',
           indicator: [
@@ -264,6 +277,15 @@ const onSubmit = () => {
           myChart.setOption({
             backgroundColor: '#fff', // canvas背景颜色
             // canvas标题配置项
+            toolbox: {
+              show: true,
+              feature: {
+                mark: { show: true },
+                dataView: { show: true, readOnly: false },
+                restore: { show: true },
+                saveAsImage: { show: true }
+              }
+            },
             title: {
               text: '评论云图',
               left: '-1%',
@@ -321,6 +343,7 @@ const onSubmit = () => {
               var option
 
               option = {
+                color: ['#ee6666', '#5470c6'], 
                 title: {
                   text: '评论情感',
                   subtext: '',
@@ -405,6 +428,15 @@ const displayWordcloud = (data) => {
     new_data.push({ "name": k, "value": data[k] })
   }
   chart.setOption({
+    toolbox: {
+      show: true,
+      feature: {
+        mark: { show: true },
+        dataView: { show: true, readOnly: false },
+        restore: { show: true },
+        saveAsImage: { show: true }
+      }
+    },
     series: [{
       type: 'wordCloud',
       shape: 'circle',
@@ -545,6 +577,15 @@ const displayLine = (data) => {
       })
     })
     option = {
+      toolbox: {
+        show: true,
+        feature: {
+          mark: { show: true },
+          dataView: { show: true, readOnly: false },
+          restore: { show: true },
+          saveAsImage: { show: true }
+        }
+      },
       animationDuration: 5000,
       dataset: [
         {
@@ -601,6 +642,15 @@ const displayBar = (data) => {
   var startCount = new_data[startIndex].counts
 
   var option = {
+    toolbox: {
+      show: true,
+      feature: {
+        mark: { show: true },
+        dataView: { show: true, readOnly: false },
+        restore: { show: true },
+        saveAsImage: { show: true }
+      }
+    },
     // 图标的上下左右边界
     grid: {
       top: 10,
@@ -735,6 +785,15 @@ const displayHeat = (tags, items) => {
       return [item[1], item[0], item[2] || '-']
     })
   option = {
+    toolbox: {
+      show: true,
+      feature: {
+        mark: { show: true },
+        dataView: { show: true, readOnly: false },
+        restore: { show: true },
+        saveAsImage: { show: true }
+      }
+    },
     tooltip: {
       position: 'top'
     },
@@ -795,14 +854,16 @@ onMounted(() => {
       let data = res.data.data
       displayPie(data["rate_data"])
       displayWordcloud(data["words_count"])
-      displayLine(data["line_data"])
+      // displayLine(data["line_data"])
+      line_data.value = data["line_data"]
       loading_1.value = false
     })
   axios.post(sever + '/all-video/tags-count-in-month')
     .then((res) => {
       let data = res.data.data
-      displayBar(data["tags_count_in_month"])
+      // displayBar(data["tags_count_in_month"])
       loading_2.value = false
+      bar_data.value = data["tags_count_in_month"]
     })
 
   loading.value = false
