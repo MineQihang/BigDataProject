@@ -33,8 +33,8 @@
 │      single_video.py
 │
 └─VideoRecommendation
-        README.md
         video_recommend.py
+        generate_tfidf_model.py
 ```
 
 
@@ -50,4 +50,7 @@
 |     `word_segment.py`     |   评论分词   |
 |     `single_video.py`     |  单个视频数据分析    |
 |     `video_recommend.py`     |   视频推荐   |
+| `generate_tfidf_model.py` | 生成TF-IDF模型及其他辅助材料 |
+
+
 
