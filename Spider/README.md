@@ -72,7 +72,7 @@
 
 由于项目后期发现在大数据量下MySQL数据库增删改查速度很慢，效率低下，因此后期我们将MySQL数据库上的数据迁移到MongoDB。
 
-运行`mysql2mongo.py`即可将`msql`的`bilibili`数据表迁移至`mongo`数据库中。
+运行`mysql2mongo.py`即可将`mysql`的`bilibili`数据表迁移至`mongo`数据库中。
 
 #### 4 爬取总体视频数量数据
 
@@ -96,26 +96,26 @@
 
 （1）准备数据库
 
-由于项目中使用了两种数据库，因此需要部署MySQL（5.7.18）和MongoDB（5.0.6）两种数据库。可以选择自行部署在主机上然后修改config.py文件中的主机名等信息即可。本项目采用云数据库的方式，在腾讯云上购买了MySQL数据库，在阿里云上购买了MongoDB数据库来存储数据。
+由于项目中使用了两种数据库，因此需要部署`MySQL（5.7.18）`和`MongoDB（5.0.6）`两种数据库。可以选择自行部署在主机上然后修改`config.py`文件中的主机名等信息即可。本项目采用云数据库的方式，在腾讯云上购买了`MySQL`数据库，在阿里云上购买了`MongoDB`数据库来存储数据。
 
 （2）新增爬取任务
 
-直接运行Spider文件下的add_task.py即可。
+直接运行`Spider`文件下的`add_task.py`即可。
 
-环境要求：python>=3.8，PyMySQL>=1.0.2
+环境要求：`python>=3.8`，`PyMySQL>=1.0.2`
 
 （3）运行爬取全部数据的任务
 
-直接运行Spider文件下的get_main_data.py即可。
+直接运行`Spider`文件下的`get_main_data.py`即可。
 
-额外环境要求：aiohttp>=3.8.3
+额外环境要求：`aiohttp>=3.8.3`
 
 （4）运行爬取总体数据的任务
 
-直接运行Spider文件下的get_overall_data.py即可。
+直接运行`Spider`文件下的`get_overall_data.py`即可。
 
-额外环境要求：pymongo>=3.9.0
+额外环境要求：`pymongo>=3.9.0`
 
 （5）迁移数据库
 
-直接运行Spider文件下的mysql2mongo.py即可。
+直接运行`Spider`文件下的`mysql2mongo.py`即可。

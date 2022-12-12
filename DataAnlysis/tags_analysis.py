@@ -1,4 +1,4 @@
-from database.db import query_all_video_tags, insert_many_data
+from database.mongo_db import query_all_video_tags, insert_many_data
 from tqdm import tqdm
 
 data = query_all_video_tags()
