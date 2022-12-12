@@ -118,7 +118,7 @@ import {
 const bar_data = ref([])
 const line_data = ref([])
 
-const sever = 'http://10.234.160.121:5000'
+const sever = 'http://219.221.121.47:5000'
 const page = reactive({
   which: '1',
   rank_chart_show: 0,
