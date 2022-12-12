@@ -4,13 +4,6 @@ from config.config import M_HOST, M_PORT, M_USER, M_PASSWORD
 import jieba
 
 
-def process_string(string):
-    return string.replace(" ", "").replace("\n", "").replace("\t", "")
-
-def get_stop_words(filepath):
-    stop_words = [line.strip() for line in open(filepath, 'r', encoding='utf-8').readlines()]
-    return stop_words
-
 spark = SparkSession \
     .builder \
     .appName("TitleWordsAnalysis") \
@@ -20,6 +13,14 @@ spark = SparkSession \
     .config("spark.jars.packages", "org.mongodb.spark:mongo-spark-connector:10.0.5") \
     .config("spark.rpc.message.maxSize", 1024) \
     .getOrCreate()
+
+def process_string(string):
+    return string.replace(" ", "").replace("\n", "").replace("\t", "")
+
+def get_stop_words(filepath):
+    stopwords = spark.textFile(filepath).collect()
+    stopwords = [x.strip() for x in stopwords]
+    return stopwords
 
 print("正在加载数据库...")
 df = spark.read.format("mongodb").load()
@@ -31,7 +32,7 @@ words_list = jieba.lcut(string)
 
 print("正在进行MapReduce统计结果...")
 wordsRdd = spark.sparkContext.parallelize(words_list)
-stop_words = get_stop_words("./stop_words.txt")
+stop_words = get_stop_words("/project/stop_words.txt")
 resRdd = wordsRdd.filter(lambda word: word not in stop_words) \
                     .filter(lambda word: len(word) > 1) \
                     .map(lambda word: (word, 1)) \
