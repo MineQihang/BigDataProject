@@ -101,7 +101,7 @@ import {
   Location,
   Setting,
 } from '@element-plus/icons-vue'
-const sever = 'http://10.234.160.121:5000'
+const sever = 'http://219.221.121.47:5000'
 const page = reactive({
   v: '1',
 })
