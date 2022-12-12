@@ -148,6 +148,6 @@ yarn-error.log*
 */temp/
 */dataset/
 data/
-*/config/
+*/config/config.py
 */test.py
 */test.ipynb

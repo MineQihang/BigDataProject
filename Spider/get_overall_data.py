@@ -1,4 +1,4 @@
-from database.db import insert_many_data
+from database.mongo_db import insert_many_data
 from request.request import send_get_requests
 from time import sleep
 
