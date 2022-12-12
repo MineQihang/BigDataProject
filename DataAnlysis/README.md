@@ -30,7 +30,9 @@
 
 ⑤  对于给定的两个tag（u、v），要计算其关联度，我们使用如下公式：
 
-![image-20221212153114307](https://qihang-1306873228.cos.ap-chongqing.myqcloud.com/imgs/image-20221212153114307.png)
+$$
+r(u,v)=\frac{2\times\mathrm{count}(u,v)}{\sum_t^{t\in D_u}\mathrm{count}(u,t)+\sum_t^{t\in D_v}\mathrm{count}(t,v)}
+$$
 
 其中count函数就对应上述的二维map。这个指标很好地衡量了一个tag在另一个tag中的占比，从而反映了这两个tag之间的关联程度。
 
